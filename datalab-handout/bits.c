@@ -162,6 +162,11 @@ int tmin(void) {
  *   Max ops: 10
  *   Rating: 1
  */
+// write up:
+// max_int: 011111..., and it plus 1 equals 10000..., which all bits differ with max_int.
+// so ~(x^(x+1)) will be 0
+// we can find that most of numbers can do this.
+// Only 111111... is the same, so we handle it specially.
 int isTmax(int x) {
   return !(~(x^(x+1)) | !(x+1));
 }
@@ -196,8 +201,18 @@ int negate(int x) {
  *   Max ops: 15
  *   Rating: 3
  */
+
+// write up:
+// This problem equals to 'is x between 110000b to 111001b',10 nums are not convenient for bit
+// operation, so I dicided to divide this problem into 'is x between 110000b to 110111b (0x30->0x37)'
+// or 'x == 0x38' or 'x == 0x39'
+// How to determine if x in [0x30, 0x37]? There I give a solution:
+// if x in [0x30, 0x37] <=> if x-0x30 in [0b, 111b]
+// -x == ~x+1; a == b <=> !(a^b)
+// and then the problem becomes easy.
+// !a | !b | !c <=> if and only if not all of (a,b,c) are 1 that return 1   
 int isAsciiDigit(int x) {
-  return 2;
+  return !((x+(~0x30+1))>>3) | !(x^0x38) | !(x^0x39);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -206,9 +221,19 @@ int isAsciiDigit(int x) {
  *   Max ops: 16
  *   Rating: 3
  */
+// write up:
+// it's easy to think that the answer can be '(a) | (b)'. 
+// When x, a==y and b==0, otherwise a==0 and b==z.
+// I think I should make a mask to check the num, and the best answer is that 1111&y | 0&z,
+// -1 == 1111, -0 == 0
+// !!x can transfer the x(not zero) to 1
+// but the compiler will give a warning...because then will ~ a boolen.
+// so we can understand the answer.
 int conditional(int x, int y, int z) {
   return 2;
+  //return ((~(!!x)+1)&y) | ((~(!x)+1)&z);
 }
+
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
  *   Example: isLessOrEqual(4,5) = 1.
@@ -216,8 +241,16 @@ int conditional(int x, int y, int z) {
  *   Max ops: 24
  *   Rating: 3
  */
+// write up:
+// a difficult problem...
+// the basic thought is to judge the sign of y-x, it can be represented as ((y+~x+1)>>31)&1
+// when y-x<0, it would be 1
+// the special case is that y<0&&x>0 as well as y>0&&x<0, which may overflow,
+// when y>0&&x<0 return 1, and when y<0&&x>0 return 0;
+// y<0&&x>0 should use & to connect other expressions because y-x is positive(return 1) but we
+// want to get a 0;
 int isLessOrEqual(int x, int y) {
-  return 2;
+  return (!((y>>31)&!(x>>31))) & (((!(y>>31))&(x>>31)) | !(((y+~x+1)>>31)&1));
 }
 //4
 /* 
@@ -229,7 +262,7 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  return x;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
