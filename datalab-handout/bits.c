@@ -261,9 +261,29 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 12
  *   Rating: 4 
  */
+// write up:
+// a little difficult...
+// the key thought is to use the arithmetic right shift.(reserve the sign bit)
+// this can zip all the int into one bit.
+// so our target is to make the 0 and not 0 differs on the sign bit.
+// a negative number and a positive number differs on the sign bit.
+// so i use (x>>31) and ((~x+1)>>31) to get their sign.
+// if not 0 or 0x80000..., there will be a 0 and a 1 on the bit0.
+// so the thought depends on the sign bit
+// 0, 1 => 0 (normal number)
+// 0, 0 => 1 (zero)
+// 1, 1 => 0 (0x80000...)
+// it's difficult to make 0[]0=>1 and 1[]1=>0, 
+// but we can use (m+1)&1 to make 0 to 1 and 1 to 0;
+// so i can 0^1=>1, 1&1=>1, 0^0=>0, 0&0=>0
+// the first solution is => (((x>>31)^((~x+1)>>31) | (x>>31)&((~x+1)>>31))+1) & 1
+// but this uses 13ops... and there are repeated content.
+// On the venn graph, I can find that a^b | a&b == a|b, and solve this problem. 
 int logicalNeg(int x) {
-  return x;
+  return ((((x>>31)|((~x+1)>>31)))+1)&1 ;
 }
+
+
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
  *  Examples: howManyBits(12) = 5
@@ -292,7 +312,8 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  if (uf == 0 || uf<<1 == 0) return uf;
+  return uf+(1<<23);
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
