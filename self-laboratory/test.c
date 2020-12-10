@@ -14,8 +14,10 @@ int switch_func(int x) {
 	case 4: 
 		result = 4;
 		break;
-	default:
+	case 10: 
 		result = 10;
+	default:
+		result = 100;
 		break;
 	}
 	return result;
