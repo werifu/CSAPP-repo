@@ -230,8 +230,8 @@ int isAsciiDigit(int x) {
 // but the compiler will give a warning...because then will ~ a boolen.
 // so we can understand the answer.
 int conditional(int x, int y, int z) {
-  return 2;
-  //return ((~(!!x)+1)&y) | ((~(!x)+1)&z);
+  //return 2;
+  return ((~(!!x)+1)&y) | ((~(!x)+1)&z);
 }
 
 /* 
@@ -296,8 +296,35 @@ int logicalNeg(int x) {
  *  Max ops: 90
  *  Rating: 4
  */
+// write up:
+// not my work
+// the problem can be divided into two cases: positive and negative.
+// when x > 0: we should find the highest bit with 1, and the result is n+1(sign bit);
+// such as 0x70, we need 7 + 1 bits;
+// when x < 0: we should find the highest bit with 0, and the result is n+1(sign bit):
+// such as 1001, it's -7 and 11001 is also -7, 111001 is -7, we need 3+1 bits to represent it.
+// to convenient our operation, we can make `x = (sign&(~x)) | (~sign&x)`, this can change x to ~x 
+// when negative and x when positive. (great daze!) Now our target is to find the highest bit with 1
+// and then we use binary search to find whether the high m bits include 1
+// b16 equals 16 when the highest 16bits have 1, otherwise equals 0;
+// it means we need at least 16 bits to show.
+// and others are the same.
 int howManyBits(int x) {
-  return 0;
+  int b16, b8, b4, b2, b1, b0;
+  int sign = x >> 31;
+  x = (sign&(~x)) | (~sign&x);
+  b16 = !!(x>>16)<<4;
+  x = x >> b16;
+  b8 = !!(x>>8)<<3;
+  x = x >> b8;
+  b4 = !!(x>>4)<<2;
+  x = x >> b4;
+  b2 = !!(x>>2)<<1;
+  x = x >> b2;
+  b1 = !!(x>>1);
+  x = x >> b1;
+  b0 = x;
+  return b16+b8+b4+b2+b1+b0+1;
 }
 //float
 /* 
@@ -311,9 +338,21 @@ int howManyBits(int x) {
  *   Max ops: 30
  *   Rating: 4
  */
+// write up:
+// it's not my work
+// for normal cases: return the (sign,exp+1,num) 
+// there are 4 special cases: +-inf, 0, NaN,
+// for inf and NaN we need only return itself;
+// as for -inf and 0, we make uf*2|sign (it would not overflow)
 unsigned floatScale2(unsigned uf) {
-  if (uf == 0 || uf<<1 == 0) return uf;
-  return uf+(1<<23);
+  int exp = (uf&0x7f800000) >> 23;
+  int sign = uf&(1<<31);
+  if (exp == 0) return (uf<<1) | sign;
+  if (exp == 255) return uf;
+  exp++;
+  if (exp == 255) return 0x7f800000 | sign;
+
+  return (exp<<23)|(uf&0x807fffff);
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -327,8 +366,34 @@ unsigned floatScale2(unsigned uf) {
  *   Max ops: 30
  *   Rating: 4
  */
+// write up:
+// the presentation of single-precision floating point value:
+// -,--------,-----------------------(sign[1], offset[8], num[23])
+// s,   x    ,    num
+// the problem can be divided to 3 cases:
+// 1. offset < 0: return 0;(because 1.xxx * 2^-m must be 0(int))
+// 2. offset >= 23: out of range of num, so should be 0x80000000u
+// 3. normal:
+// 	we make the left offset bits of num into the result and then result<<=30-offset
+// 	to ensure the num can be behind the sign bit, such as 1,111,000, so that we can 
+// 	get a normal negation.
+// 	last we make result>>=30-offset to ensure it ok.
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int offset = (uf>>23) & 0xff;
+  offset -= 127;
+  if (offset < 0) return 0;
+  if (offset >= 23) return 0x80000000u; 
+  int result = 0;
+  int i = 0; 
+  while (i < offset) {
+    result |= (offset>>(23-offset)) | (1<<i);
+    i++;
+  }
+  result |= 1<<offset;
+  result <<= 30-offset;
+  result |= (uf & (1<<31));
+  result >>= 30-offset;
+  return result;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -343,6 +408,14 @@ int floatFloat2Int(unsigned uf) {
  *   Max ops: 30 
  *   Rating: 4
  */
+// write up:
+// it's clear
+// return (0,x+127,0)
+// special cases: too small and too large
 unsigned floatPower2(int x) {
-    return 2;
+  int inf = 0xff << 23;
+  int exp = x + 127;
+  if (exp <= 0) return 0;
+  if (exp >= 255) return inf;
+  return exp << 23;
 }
