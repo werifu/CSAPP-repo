@@ -1,87 +1,56 @@
 	.file	"test.c"
 	.text
-	.globl	switch_func
-	.type	switch_func, @function
-switch_func:
-.LFB0:
-	.cfi_startproc
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	movl	%edi, -20(%rbp)
-	movl	$15, -4(%rbp)
-	cmpl	$10, -20(%rbp)
-	ja	.L2
-	movl	-20(%rbp), %eax
-	leaq	0(,%rax,4), %rdx
-	leaq	.L4(%rip), %rax
-	movl	(%rdx,%rax), %eax
-	cltq
-	leaq	.L4(%rip), %rdx
-	addq	%rdx, %rax
-	jmp	*%rax
-	.section	.rodata
-	.align 4
-	.align 4
-.L4:
-	.long	.L2-.L4
-	.long	.L8-.L4
-	.long	.L7-.L4
-	.long	.L6-.L4
-	.long	.L5-.L4
-	.long	.L2-.L4
-	.long	.L2-.L4
-	.long	.L2-.L4
-	.long	.L2-.L4
-	.long	.L2-.L4
-	.long	.L3-.L4
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC0:
+	.string	"i=%d,b=%d\n"
 	.text
-.L8:
-	addl	$1, -4(%rbp)
-	jmp	.L9
-.L7:
-	movl	$2, -4(%rbp)
-	jmp	.L9
-.L6:
-	addl	$1, -4(%rbp)
-.L5:
-	movl	$4, -4(%rbp)
-	jmp	.L9
-.L3:
-	movl	$10, -4(%rbp)
-.L2:
-	movl	$100, -4(%rbp)
-	nop
-.L9:
-	movl	-4(%rbp), %eax
-	popq	%rbp
-	.cfi_def_cfa 7, 8
+	.globl	f
+	.type	f, @function
+f:
+.LFB11:
+	.cfi_startproc
+	subq	$24, %rsp
+	.cfi_def_cfa_offset 32
+	movl	%edi, %esi
+	movq	%fs:40, %rax
+	movq	%rax, 8(%rsp)
+	xorl	%eax, %eax
+	movl	$114514, 4(%rsp)
+	movslq	%edi, %rax
+	movw	$2, (%rsp,%rax,2)
+	movl	$114514, %edx
+	leaq	.LC0(%rip), %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movq	8(%rsp), %rax
+	subq	%fs:40, %rax
+	jne	.L4
+	movl	$114514, %eax
+	addq	$24, %rsp
+	.cfi_remember_state
+	.cfi_def_cfa_offset 8
 	ret
+.L4:
+	.cfi_restore_state
+	call	__stack_chk_fail@PLT
 	.cfi_endproc
-.LFE0:
-	.size	switch_func, .-switch_func
+.LFE11:
+	.size	f, .-f
 	.globl	main
 	.type	main, @function
 main:
-.LFB1:
+.LFB12:
 	.cfi_startproc
-	pushq	%rbp
+	subq	$8, %rsp
 	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	subq	$16, %rsp
-	movl	$233, %edi
-	call	switch_func
-	movl	%eax, -4(%rbp)
+	movl	$5, %edi
+	call	f
 	movl	$0, %eax
-	leave
-	.cfi_def_cfa 7, 8
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 8
 	ret
 	.cfi_endproc
-.LFE1:
+.LFE12:
 	.size	main, .-main
 	.ident	"GCC: (GNU) 10.2.0"
 	.section	.note.GNU-stack,"",@progbits

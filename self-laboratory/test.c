@@ -1,28 +1,17 @@
 #include<stdio.h>
 
-int switch_func(int x) {
-	int result = 15;
-	switch (x) {
-	case 1:
-		result++;
-		break;
-	case 2:
-		result = 2;
-		break;
-    case 3:
-		result++;
-	case 4: 
-		result = 4;
-		break;
-	case 10: 
-		result = 10;
-	default:
-		result = 100;
-		break;
-	}
-	return result;
+struct A {
+    int a[2];
+    int b;
+};
+int f(int i) {
+    struct A s;
+    s.b = 0x114514;
+    s.a[i] = 0xffff;
+	printf("i=%d,b=%d\n", i, s.b);
+    return s.b;
 }
 int main() {
-	int i = switch_func(233);
-	return 0;
+    f(10);
+    return 0;
 }
