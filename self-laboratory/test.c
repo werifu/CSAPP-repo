@@ -1,17 +1,11 @@
 #include<stdio.h>
-
-struct A {
-    int a[2];
-    int b;
-};
-int f(int i) {
-    struct A s;
-    s.b = 0x114514;
-    s.a[i] = 0xffff;
-	printf("i=%d,b=%d\n", i, s.b);
-    return s.b;
+char f(char* str) {
+    int v = 1;
+    return str[v];
 }
 int main() {
-    f(10);
+    char str[20] = "test string\n";
+    char a = f(str);
+    printf("%c\n", a);
     return 0;
 }
